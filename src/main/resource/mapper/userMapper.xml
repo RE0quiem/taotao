@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjz.dao.UserDao">
+    <resultMap id="userTable_link_user" type="User">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPassword" column="user_password"/>
+        <result property="userTel" column="user_tel"/>
+        <result property="userDor" column="user_dor"/>
+        <result property="userMoney" column="user_money"/>
+    </resultMap>
+    <select id="login" parameterType="User" resultMap="userTable_link_user">
+    SELECT
+    `user_id`,
+    `user_name`,
+    `user_password`,
+    `user_tel`,
+    `user_dor`,
+    `user_money`
+    FROM
+    `users`
+    where
+    `user_name`=#{userName}
+    and `user_password`=#{userPassword}
+    </select>
+
+    <insert id="register" parameterType="User">
+        INSERT INTO `taotaowang`.`users` (
+        `user_id`,
+        `user_name`,
+        `user_password`,
+        `user_tel`,
+        `user_dor`
+        )
+        VALUES
+      (
+        #{userId},
+        #{userName},
+        #{userPassword},
+        #{userTel},
+        #{userDor}
+      ) ;
+    </insert>
+    <select id="queryById" parameterType="String" resultMap="userTable_link_user">
+        SELECT
+          `user_id`,
+          `user_name`,
+          `user_password`,
+          `user_tel`,
+          `user_dor`,
+          `user_money`
+        FROM
+          `taotaowang`.`users`
+          where
+          `user_id`=#{userId}
+    </select>
+    <update id="updatePerson" parameterType="com.zjz.pojo.User">
+        UPDATE
+          `taotaowang`.`users`
+        SET
+          `user_name` = #{userName},
+          `user_password` = #{userPassword},
+          `user_tel` = #{userTel},
+          `user_dor` = #{userDor}
+          <if test="userMoney!=null and userMoney!='' ">
+              ,`user_money`=#{userMoney}
+          </if>
+        WHERE `user_id` = #{userId};
+    </update>
+</mapper>

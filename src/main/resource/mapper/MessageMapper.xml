@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjz.dao.MessageDao">
+    <resultMap id="link_messageTable_msg" type="com.zjz.pojo.Message">
+        <id property="mId" column="m_id"/>
+        <result property="mProId" column="m_productId"/>
+        <result property="mParentId" column="m_parentId"/>
+        <result property="mTime" column="m_time"/>
+        <result property="mFromId" column="m_fromId"/>
+        <result property="mState" column="m_state"/>
+        <result property="mContent" column="m_content"/>
+        <result property="mFromName" column="m_fromName"/>
+    </resultMap>
+    <insert id="saveMessage" parameterType="com.zjz.pojo.Message">
+      INSERT INTO `taotaowang`.`message` (
+          `m_id`,
+          `m_productId`,
+          `m_parentId`,
+          `m_time`,
+          `m_fromId`,
+          `m_state`,
+          `m_content`,
+          `m_fromName`
+        )
+        VALUES
+          (
+            #{mId},
+            #{mProId},
+            #{mParentId},
+            #{mTime},
+            #{mFromId},
+            #{mState},
+            #{mContent},
+            #{mFromName}
+          ) ;
+    </insert>
+    <select id="queryFristMsg" parameterType="String" resultMap="link_messageTable_msg">
+        SELECT
+          `m_id`,
+          `m_productId`,
+          `m_parentId`,
+          `m_time`,
+          `m_fromId`,
+          `m_state`,
+          `m_content`,
+          `m_fromName`
+        FROM
+          `taotaowang`.`message`
+        where
+          m_productId=#{proId}
+    </select>
+    <select id="findChild" parameterType="String" resultMap="link_messageTable_msg">
+        SELECT
+          `m_id`,
+          `m_productId`,
+          `m_parentId`,
+          `m_time`,
+          `m_fromId`,
+          `m_state`,
+          `m_content`,
+          `m_fromName`
+        FROM
+          `taotaowang`.`message`
+        where
+          `m_parentId`=#{parentId}
+    </select>
+    <select id="findAllMsgByUserId" parameterType="String" resultMap="link_messageTable_msg">
+        SELECT
+          `m_id`,
+          `m_productId`,
+          `m_parentId`,
+          `m_time`,
+          `m_fromId`,
+          `m_state`,
+          `m_content`,
+          `m_fromName`
+        FROM
+          `taotaowang`.`message`
+        where
+          `m_fromId`=#{userId}
+    </select>
+    <!--通过评论父id查到父评论-->
+    <select id="findFatherById" parameterType="String" resultMap="link_messageTable_msg">
+        SELECT
+          `m_id`,
+          `m_productId`,
+          `m_parentId`,
+          `m_time`,
+          `m_fromId`,
+          `m_state`,
+          `m_content`,
+          `m_fromName`
+        FROM
+          `taotaowang`.`message`
+        where
+          `m_id`=#{parentId}
+    </select>
+    <delete id="batchDelete" parameterType="String">
+        DELETE
+        FROM
+          `taotaowang`.`message`
+        WHERE `m_id` in
+        <foreach collection="array" item="arr" index="no" open="(" separator="," close=")">
+            #{arr}
+        </foreach>
+        ;
+    </delete>
+</mapper>

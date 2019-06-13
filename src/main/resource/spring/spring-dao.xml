@@ -1,0 +1,60 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!-- 配置连接池属性 -->
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <!-- c3p0连接池的私有属性 -->
+        <property name="maxPoolSize" value="30"/>
+        <property name="minPoolSize" value="10"/>
+        <!-- 关闭连接后自动commit -->
+        <property name="autoCommitOnClose" value="true"/>
+        <!-- 获取连接超时时间 -->
+        <property name="checkoutTimeout" value="10000"/>
+        <!-- 当获取连接失败重试次数 -->
+        <property name="acquireRetryAttempts" value="2"/>
+    </bean>
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="typeAliasesPackage" value="com.zjz.pojo"/>
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <!--使用下面的方式配置参数，一行配置一个，后面会有所有的参数介绍 -->
+                        <value>
+                            <!--helperDialect属性来指定分页插件使用哪种方言。-->
+                            helperDialect=mysql
+                            <!--分页合理化参数，设置为true时，pageNum<=0时会查询第一页,pageNum>pages(超过总数时),会查询最后一页。-->
+                            reasonable=true
+                            <!--为了支持startPage(Object params)方法，增加了该参数来配置参数映射，用于从对象中根据属性名取值，
+                                可以配置 pageNum,pageSize,count,pageSizeZero,reasonable-->
+                            params=count=countSql
+                            <!--支持通过Mapper接口参数来传递分页参数，默认值false，分页插件会从查询方法的参数值中，自动根据上面 params 配
+                             置的字段中取值，查找到合适的值时就会自动分页。-->
+                            supportMethodsArguments=true
+                            <!--默认值为 false。设置为 true 时，允许在运行时根据多数据源自动识别对应方言的分页-->
+                            autoRuntimeDialect=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+    <!-- 4.配置扫描Dao接口包，动态实现Dao接口，注入到spring容器中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"/>-->
+        <!-- 给出需要扫描Dao接口包 -->
+        <property name="basePackage" value="com.zjz.dao"/>
+    </bean>
+</beans>

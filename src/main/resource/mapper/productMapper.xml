@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjz.dao.ProductDao">
+    <resultMap id="productsTable_link_product" type="Product">
+        <id property="productId" column="product_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="tip" column="tip"/>
+        <result property="productIntro" column="intro"/>
+        <result property="price" column="price"/>
+        <result property="img" column="img"/>
+        <result property="startTime" column="startTime"/>
+        <result property="endTime" column="endTime"/>
+        <association property="fromUser" javaType="com.zjz.pojo.User">
+            <id column="user_id" property="userId"/>
+            <result property="userName" column="user_name"/>
+            <result property="userPassword" column="user_password"/>
+            <result property="userTel" column="user_tel"/>
+            <result property="userDor" column="user_dor"/>
+            <result property="userMoney" column="user_money"/>
+        </association>
+    </resultMap>
+
+    <insert id="productInsert" parameterType="Product">
+        INSERT INTO `taotaowang`.`products` (
+          `product_id`,
+          `product_name`,
+          `price`,
+          `tip`,
+          `img`,
+          `startTime`,
+          `endTime`,
+          `intro`,
+          `from_user_id`,
+          `out_user_id`
+        )
+        VALUES
+          (
+            #{productId},
+            #{productName},
+            #{price},
+            #{tip},
+            #{img},
+            #{startTime},
+            #{endTime},
+            #{productIntro},
+            #{fromUser.userId},
+            #{outUser.userId}
+          ) ;
+    </insert>
+    <select id="queryAll" resultMap="productsTable_link_product">
+        SELECT
+          `product_id`,
+          `product_name`,
+          `price`,
+          `tip`,
+          `img`,
+          `startTime`,
+          `endTime`,
+          `intro`,
+          `from_user_id`,
+          `user_name`,
+          `user_password`,
+          `user_tel`,
+          `user_dor`,
+          `user_money`,
+          `out_user_id`
+        FROM
+          `products`  INNER JOIN `users`
+        WHERE
+          `from_user_id`=`user_id`
+    </select>
+    <select id="fuzzySearch" parameterType="String" resultMap="productsTable_link_product">
+        SELECT
+          `product_id`,
+          `product_name`,
+          `price`,
+          `tip`,
+          `img`,
+          `startTime`,
+          `endTime`,
+          `intro`,
+          `from_user_id`,
+          `user_name`
+        FROM
+          products,users
+          where
+          from_user_id=user_id and
+          product_name like "%${value}%"
+    </select>
+    <select id="queryById" parameterType="String" resultMap="productsTable_link_product">
+        SELECT
+          `product_id`,
+          `product_name`,
+          `price`,
+          `tip`,
+          `img`,
+          `startTime`,
+          `endTime`,
+          `intro`,
+          `from_user_id`,
+          `user_name`
+        FROM
+          products,users
+          where
+          from_user_id=user_id and
+          user_id=#{userId}
+    </select>
+    <delete id="batchDeletePro" parameterType="String">
+        DELETE
+        FROM
+          `taotaowang`.`products`
+        WHERE `product_id` in
+        <foreach collection="array" item="item" index="no" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ;
+    </delete>
+    <select id="queryByArray" parameterType="String" resultMap="productsTable_link_product">
+        SELECT
+          `product_id`,
+          `product_name`,
+          `price`,
+          `tip`,
+          `img`,
+          `startTime`,
+          `endTime`,
+          `intro`,
+          `from_user_id`,
+          `out_user_id`,
+          user_id,
+          user_name,
+          user_tel,
+          user_dor,
+          user_money
+          from
+          products,users
+          where
+          product_id in
+          <foreach collection="array" item="item" index="no" open="(" separator="," close=")">
+              #{item}
+          </foreach> and
+          from_user_id= users.user_id
+    </select>
+    <select id="queryByProId" parameterType="String" resultMap="productsTable_link_product">
+        SELECT
+          `product_id`,
+          `product_name`,
+          `price`,
+          `tip`,
+          `img`,
+          `startTime`,
+          `endTime`,
+          `intro`,
+          `from_user_id`,
+          `out_user_id`,
+          user_id,
+          user_name,
+          user_tel,
+          user_dor,
+          user_money
+        FROM
+          `taotaowang`.`products`,users
+          where
+          product_id=#{proId} and
+          from_user_id= users.user_id
+    </select>
+</mapper>

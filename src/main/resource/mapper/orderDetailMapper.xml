@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zjz.dao.OrderDetailDao">
+    <resultMap id="link_userTable_od" type="com.zjz.pojo.User">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPassword" column="user_password"/>
+        <result property="userTel" column="user_tel"/>
+        <result property="userDor" column="user_dor"/>
+        <result property="userMoney" column="user_money"/>
+        <!--user->orders-->
+        <collection property="orders" ofType="com.zjz.pojo.Order">
+            <id column="order_id" property="orderId"/>
+            <result property="orderTime" column="order_time"/>
+            <!--order->orderDetails-->
+            <collection property="orderDetails" ofType="com.zjz.pojo.OrderDetail">
+                <id property="odId" column="od_id"/>
+                <!--orderDetail->product-->
+                <association property="product" javaType="com.zjz.pojo.Product">
+                    <id property="productId" column="product_id"/>
+                    <result property="productName" column="product_name"/>
+                    <result property="tip" column="tip"/>
+                    <result property="productIntro" column="intro"/>
+                    <result property="price" column="price"/>
+                    <result property="img" column="img"/>
+                    <result property="startTime" column="startTime"/>
+                    <result property="endTime" column="endTime"/>
+                    <!--product->fromUser-->
+                    <!--<association property="fromUser" javaType="com.zjz.pojo.User">
+                        <id column="user_id" property="userId"/>
+                    </association>-->
+                </association>
+            </collection>
+        </collection>
+    </resultMap>
+    <resultMap id="link_detailsTable_sd" type="com.zjz.pojo.OrderDetail">
+        <id property="odId" column="od_id"/>
+        <association property="order" javaType="com.zjz.pojo.Order">
+            <id property="orderId" column="order_id"/>
+        </association>
+    </resultMap>
+    <insert id="insertOrderDetail" parameterType="com.zjz.pojo.OrderDetail">
+        INSERT INTO `taotaowang`.`orderdetail` (`od_id`, `order_id`, `pro_id`)
+        VALUES
+          (#{odId}, #{order.orderId},
+              #{product.productId}
+          ) ;
+    </insert>
+    <select id="selectAllInUser" parameterType="java.lang.String" resultMap="link_userTable_od">
+        SELECT
+           users.`user_id`,
+          `user_name`,
+          `user_password`,
+          `user_tel`,
+          `user_dor`,
+          `user_money` ,
+          order.order_id,
+          order.order_time,
+          `od_id`,
+          `product_id`,
+          `product_name`,
+          `price`,
+          `tip`,
+          `img`,
+          `startTime`,
+          `endTime`,
+          `intro`
+        FROM
+          `users`,`order`,`orderdetail`,`products`
+          WHERE
+          users.user_id=#{userId}
+          AND order.user_id=users.user_id
+          AND order.order_id=orderdetail.order_id
+          AND orderdetail.pro_id=products.product_id
+    </select>
+    <select id="queryByProIds" parameterType="java.lang.String" resultMap="link_detailsTable_sd">
+        SELECT
+          `od_id`,
+          `order_id`
+        FROM
+          `taotaowang`.`orderdetail`
+        where
+          `pro_id` in
+        <foreach collection="array" item="arr" index="no" open="(" separator="," close=")">
+        #{arr}
+        </foreach>
+    </select>
+    <delete id="batchDeleteOrder" parameterType="java.util.List">
+        DELETE
+        FROM
+          `taotaowang`.`order`
+        WHERE `order_id` in
+        <foreach collection="list" item="item" index="no" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ;
+    </delete>
+    <delete id="batchDelete" parameterType="java.lang.String">
+        DELETE
+        FROM
+        `taotaowang`.`orderdetail`
+        WHERE `pro_id` in
+        <foreach collection="array" item="arr" index="no" open="(" separator="," close=")">
+            #{arr}
+        </foreach>
+        ;
+    </delete>
+</mapper>
